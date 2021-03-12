@@ -12,6 +12,55 @@ const url_to_domain = (url) => {
   return url.match(regex)[1];
 };
 
+const startLogging = async (domain, test, policy) => {
+  // Create .pcap file
+  console.log(`Creating .pcap file for test ${test} for domain ${domain}...`);
+
+  pcapfilepath = `../data/${policy}/${test}_pcap_${domain}.pcap`;
+  try {
+    const filehandle = await open(pcapfilepath, "w");
+    await filehandle.chmod(444);
+    await filehandle.close();
+    console.log("Successfully created .pcap file.");
+  } catch (e) {
+    console.log("Error creating .pcap file: ", e.message);
+  }
+
+  // Spawn tshark process
+  let options = ["tshark", "-w", pcapfilepath];
+  if (test === "dns") {
+    options = [...options, "-f", "udp port 53"];
+  } else {
+    /// TODO
+  }
+  console.log("Creating tshark logging process...");
+  const tsharkProc = spawn("sudo", options);
+  const tsharkProcStartPromise = new Promise((resolve) => {
+    tsharkProc.stdout.on("data", (data) => {
+      if (`${data}`.startsWith("Capturing")) {
+        setTimeout(resolve, 100);
+      }
+    });
+
+    tsharkProc.stderr.on("data", (data) => {
+      if (`${data}`.startsWith("Capturing")) {
+        setTimeout(resolve, 100);
+      }
+    });
+  });
+
+  tsharkProc.on("error", (error) => {
+    console.log(`error creating tshark process: ${error.message}`);
+  });
+
+  tsharkProc.on("close", (code) => {
+    console.log(`tshark child process exited with code ${code}`);
+  });
+
+  await tsharkProcStartPromise;
+  return tsharkProc.pid;
+};
+
 const dnsTest = async (domain, policy) => {
   const cloudflareDNS = "1.1.1.1";
 
@@ -20,7 +69,7 @@ const dnsTest = async (domain, policy) => {
     let filehandle = null;
     try {
       console.log("Creating DNS .txt file...");
-      filehandle = await open(`../data/${policy}/dnslog_${domain}.txt`, "w");
+      filehandle = await open(`../data/${policy}/dns_log_${domain}.txt`, "w");
       filehandle.write(`DNS Lookup for ${domain} using policy ${policy}\n`);
       console.log("Successfully created DNS .txt file.");
     } catch (e) {
@@ -54,65 +103,37 @@ const dnsTest = async (domain, policy) => {
 };
 
 const launchDnsTest = async (domain, policy) => {
-  console.log("Creating DNS .pcap file...");
-
-  pcapfilepath = `../data/${policy}/dnspcap_${domain}.pcap`;
   try {
-    const filehandle = await open(pcapfilepath, "w");
-    await filehandle.chmod(444);
-    await filehandle.close();
-    console.log("Successfully created DNS .pcap file.");
+    console.log("Starting capture...");
+    const pid = await startLogging(domain, "dns", policy);
+
+    // DNS Tests
+    console.log("Starting DNS Tests...");
+    const ips = await dnsTest(domain, policy);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    kill(pid);
+    return ips;
   } catch (e) {
-    console.log("Error creating .pcap file: ", e.message);
+    console.log("Error running DNS Tests: ", e.message);
   }
+};
 
-  console.log("Creating tshark DNS logging process...");
-  const dnsLogProc = spawn("sudo", [
-    "tshark",
-    "-w",
-    pcapfilepath,
-    "-f",
-    "udp port 53",
-  ]);
-
-  const dnsLogProcStartPromise = new Promise((resolve) => {
-    dnsLogProc.stdout.on("data", (data) => {
-      if (`${data}`.startsWith("Capturing")) {
-        setTimeout(resolve, 100);
-      }
+launchPageLoadTest = async (url, ips, policy) => {
+  try {
+    const domain = url_to_domain(url);
+    const pid = await startLogging(domain, "pageload", policy);
+    const browser = await puppeteer.launch({ args: ["--no-sandbox"] });
+    const page = await browser.newPage();
+    await page.goto(url);
+    await page.screenshot({
+      path: `../data/${policy}/screenshots/screenshot_${domain}.png`,
     });
-
-    dnsLogProc.stderr.on("data", (data) => {
-      if (`${data}`.startsWith("Capturing")) {
-        setTimeout(resolve, 100);
-      }
-    });
-  });
-
-  dnsLogProc.stderr.on("data", (data) => {
-    console.log(`tshark stderr: ${data}`);
-  });
-
-  dnsLogProc.stdout.on("data", (data) => {
-    console.log(`tshark stdout: ${data}`);
-  });
-
-  dnsLogProc.on("error", (error) => {
-    console.log(`error creating DNS tshark process: ${error.message}`);
-  });
-
-  dnsLogProc.on("close", (code) => {
-    console.log(`tshark child process exited with code ${code}`);
-  });
-
-  await dnsLogProcStartPromise;
-
-  // DNS Tests
-  console.log("Starting DNS Tests...");
-  const ips = await dnsTest(domain, policy);
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-  kill(dnsLogProc.pid);
-  return ips;
+    await browser.close();
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    kill(pid);
+  } catch (e) {
+    console.log("Puppeteer error: ", e.message);
+  }
 };
 
 (async () => {
@@ -120,18 +141,7 @@ const launchDnsTest = async (domain, policy) => {
     const domain = url_to_domain(url);
     const ips = await launchDnsTest(domain, policy);
     console.log("IPs are ", ips);
-
-    // (async () => {
-    //   try {
-    //     const browser = await puppeteer.launch();
-    //     const page = await browser.newPage();
-    //     await page.goto("https://madamasr.com");
-    //     await page.screenshot({ path: "example.png" });
-    //     await browser.close();
-    //   } catch (e) {
-    //     console.log("Error: ", e.message);
-    //   }
-    // })();
+    await launchPageLoadTest(url, ips, policy);
   } catch (e) {
     console.log("Error: ", e.message);
   }
