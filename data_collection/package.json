@@ -12,7 +12,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "node-gyp": "^7.1.2",
     "puppeteer": "^8.0.0",
     "tree-kill": "^1.2.2"
+  },
+  "devDependencies": {
+    "sslkeylog": "^0.2.2"
   }
 }

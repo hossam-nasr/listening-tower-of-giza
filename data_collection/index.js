@@ -3,8 +3,14 @@ const dnsPromises = require("dns").promises;
 const { spawn } = require("child_process");
 const { open } = require("fs").promises;
 const kill = require("tree-kill");
+const sslkeylog = require("sslkeylog");
+const indices = require("./indices.json");
 
-const url = "https://www.aljazeera.net/";
+const keylog_file = "~/ssl_key_log_file.log";
+
+sslkeylog.hookAll();
+
+const url = "http://www.aljazeera.net/";
 const policy = "test";
 
 const url_to_domain = (url) => {
@@ -12,11 +18,13 @@ const url_to_domain = (url) => {
   return url.match(regex)[1];
 };
 
-const startLogging = async (domain, test, policy) => {
+const startLogging = async (domain, test, number, policy) => {
   // Create .pcap file
-  console.log(`Creating .pcap file for test ${test} for domain ${domain}...`);
+  console.log(
+    `Creating .pcap file for test ${test} #${number} for domain ${domain}...`
+  );
 
-  pcapfilepath = `../data/${policy}/${test}_pcap_${domain}.pcap`;
+  pcapfilepath = `../data/${policy}/${test}_pcap_${domain}_${number}.pcap`;
   try {
     const filehandle = await open(pcapfilepath, "w");
     await filehandle.chmod(444);
@@ -32,6 +40,13 @@ const startLogging = async (domain, test, policy) => {
     options = [...options, "-f", "udp port 53"];
   } else {
     /// TODO
+    options = [
+      ...options,
+      "-o",
+      `tls.keylog_file: ${keylog_file}`,
+      "-f",
+      "udp port 53 or tcp port 80 or tcp port 443",
+    ];
   }
   console.log("Creating tshark logging process...");
   const tsharkProc = spawn("sudo", options);
@@ -61,7 +76,7 @@ const startLogging = async (domain, test, policy) => {
   return tsharkProc.pid;
 };
 
-const dnsTest = async (domain, policy) => {
+const dnsTest = async (domain, number, policy) => {
   const cloudflareDNS = "1.1.1.1";
 
   var ret = new Set();
@@ -69,8 +84,13 @@ const dnsTest = async (domain, policy) => {
     let filehandle = null;
     try {
       console.log("Creating DNS .txt file...");
-      filehandle = await open(`../data/${policy}/dns_log_${domain}.txt`, "w");
-      filehandle.write(`DNS Lookup for ${domain} using policy ${policy}\n`);
+      filehandle = await open(
+        `../data/${policy}/dns_log_${domain}_${number}.txt`,
+        "w"
+      );
+      filehandle.write(
+        `DNS Lookup #${number} for ${domain} using policy ${policy}\n`
+      );
       console.log("Successfully created DNS .txt file.");
     } catch (e) {
       console.log("Error creating DNS .txt file");
@@ -102,14 +122,14 @@ const dnsTest = async (domain, policy) => {
   return Array.from(ret);
 };
 
-const launchDnsTest = async (domain, policy) => {
+const launchDnsTest = async (domain, number, policy) => {
   try {
     console.log("Starting capture...");
-    const pid = await startLogging(domain, "dns", policy);
+    const pid = await startLogging(domain, "dns", number, policy);
 
     // DNS Tests
     console.log("Starting DNS Tests...");
-    const ips = await dnsTest(domain, policy);
+    const ips = await dnsTest(domain, number, policy);
     await new Promise((resolve) => setTimeout(resolve, 2000));
     kill(pid);
     return ips;
@@ -118,15 +138,15 @@ const launchDnsTest = async (domain, policy) => {
   }
 };
 
-launchPageLoadTest = async (url, ips, policy) => {
+launchPageLoadTest = async (url, number, policy) => {
   try {
     const domain = url_to_domain(url);
-    const pid = await startLogging(domain, "pageload", policy);
+    const pid = await startLogging(domain, "pageload", number, policy);
     const browser = await puppeteer.launch({ args: ["--no-sandbox"] });
     const page = await browser.newPage();
     await page.goto(url);
     await page.screenshot({
-      path: `../data/${policy}/screenshots/screenshot_${domain}.png`,
+      path: `../data/${policy}/screenshots/screenshot_${domain}_${number}.png`,
     });
     await browser.close();
     await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -136,12 +156,29 @@ launchPageLoadTest = async (url, ips, policy) => {
   }
 };
 
+const domain_to_test_number = async (domain) => {
+  if (!indices[domain]) {
+    indices[domain] = 0;
+  }
+  const number = indices[domain];
+  indices[domain] += 1;
+  try {
+    const filehandle = await open("./indices.json", "w");
+    await filehandle.write(JSON.stringify(indices));
+    await filehandle.close();
+  } catch (e) {
+    console.log("Error updating .json indices: ", e.message);
+  }
+  return number;
+};
+
 (async () => {
   try {
     const domain = url_to_domain(url);
-    const ips = await launchDnsTest(domain, policy);
+    const testNumber = await domain_to_test_number(domain);
+    const ips = await launchDnsTest(domain, testNumber, policy);
     console.log("IPs are ", ips);
-    await launchPageLoadTest(url, ips, policy);
+    await launchPageLoadTest(url, testNumber, policy);
   } catch (e) {
     console.log("Error: ", e.message);
   }
