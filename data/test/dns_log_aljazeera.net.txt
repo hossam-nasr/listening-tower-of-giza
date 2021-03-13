@@ -1,0 +1,4 @@
+DNS Lookup for aljazeera.net using policy test
+DNS servers used: 172.25.48.1
+Default DNS lookup: 3.137.85.135,3.13.222.135,3.13.128.62
+Cloudflare DNS lookup: 3.137.85.135,3.13.128.62,3.13.222.135
