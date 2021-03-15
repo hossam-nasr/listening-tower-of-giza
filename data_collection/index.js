@@ -6,11 +6,9 @@ const kill = require("tree-kill");
 const sslkeylog = require("sslkeylog");
 const indices = require("./indices.json");
 
-const keylog_file = "~/ssl_key_log_file.log";
+// const keylog_file = "ssl_key_log_file.log";
 
-sslkeylog.hookAll();
-
-const url = "http://www.aljazeera.net/";
+const url = "http://aljazeera.net/";
 const policy = "test";
 
 const url_to_domain = (url) => {
@@ -18,7 +16,7 @@ const url_to_domain = (url) => {
   return url.match(regex)[1];
 };
 
-const startLogging = async (domain, test, number, policy) => {
+const startLogging = async (domain, test, number, policy, keylog_file) => {
   // Create .pcap file
   console.log(
     `Creating .pcap file for test ${test} #${number} for domain ${domain}...`
@@ -122,10 +120,10 @@ const dnsTest = async (domain, number, policy) => {
   return Array.from(ret);
 };
 
-const launchDnsTest = async (domain, number, policy) => {
+const launchDnsTest = async (domain, number, policy, keylog_file) => {
   try {
     console.log("Starting capture...");
-    const pid = await startLogging(domain, "dns", number, policy);
+    const pid = await startLogging(domain, "dns", number, policy, keylog_file);
 
     // DNS Tests
     console.log("Starting DNS Tests...");
@@ -138,10 +136,16 @@ const launchDnsTest = async (domain, number, policy) => {
   }
 };
 
-launchPageLoadTest = async (url, number, policy) => {
+launchPageLoadTest = async (url, number, policy, keylog_file) => {
   try {
     const domain = url_to_domain(url);
-    const pid = await startLogging(domain, "pageload", number, policy);
+    const pid = await startLogging(
+      domain,
+      "pageload",
+      number,
+      policy,
+      keylog_file
+    );
     const browser = await puppeteer.launch({ args: ["--no-sandbox"] });
     const page = await browser.newPage();
     await page.goto(url);
@@ -172,13 +176,30 @@ const domain_to_test_number = async (domain) => {
   return number;
 };
 
+const createSslKeyLogFile = async (domain, number, policy) => {
+  try {
+    console.log("Creating SSL keylog file...");
+    const filepath = `../data/${policy}/keylogfile_${domain}_${number}.log`;
+    const filehandle = await open(filepath, "w");
+    await filehandle.chmod(444);
+    await filehandle.close();
+    console.log("Successfully created.");
+    return filepath;
+  } catch (e) {
+    console.log("Error creating SSL keylog file: ", e.message);
+  }
+};
+
 (async () => {
   try {
     const domain = url_to_domain(url);
     const testNumber = await domain_to_test_number(domain);
-    const ips = await launchDnsTest(domain, testNumber, policy);
+    const keylog_file = await createSslKeyLogFile(domain, testNumber, policy);
+    process.env["SSLKEYLOGFILE"] = keylog_file;
+    sslkeylog.hookAll();
+    const ips = await launchDnsTest(domain, testNumber, policy, keylog_file);
     console.log("IPs are ", ips);
-    await launchPageLoadTest(url, testNumber, policy);
+    await launchPageLoadTest(url, testNumber, policy, keylog_file);
   } catch (e) {
     console.log("Error: ", e.message);
   }
