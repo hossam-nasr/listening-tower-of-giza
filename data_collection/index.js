@@ -6,9 +6,7 @@ const kill = require("tree-kill");
 const sslkeylog = require("sslkeylog");
 const indices = require("./indices.json");
 
-// const keylog_file = "ssl_key_log_file.log";
-
-const url = "http://aljazeera.net/";
+const domain = "aljazeera.net";
 const policy = "test";
 
 const url_to_domain = (url) => {
@@ -136,9 +134,9 @@ const launchDnsTest = async (domain, number, policy, keylog_file) => {
   }
 };
 
-launchPageLoadTest = async (url, number, policy, keylog_file) => {
+launchPageLoadTest = async (domain, number, policy, keylog_file) => {
   try {
-    const domain = url_to_domain(url);
+    const url = `http://${domain}`;
     const pid = await startLogging(
       domain,
       "pageload",
@@ -192,14 +190,13 @@ const createSslKeyLogFile = async (domain, number, policy) => {
 
 (async () => {
   try {
-    const domain = url_to_domain(url);
     const testNumber = await domain_to_test_number(domain);
     const keylog_file = await createSslKeyLogFile(domain, testNumber, policy);
     process.env["SSLKEYLOGFILE"] = keylog_file;
     sslkeylog.hookAll();
     const ips = await launchDnsTest(domain, testNumber, policy, keylog_file);
     console.log("IPs are ", ips);
-    await launchPageLoadTest(url, testNumber, policy, keylog_file);
+    await launchPageLoadTest(domain, testNumber, policy, keylog_file);
   } catch (e) {
     console.log("Error: ", e.message);
   }
