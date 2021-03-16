@@ -1,0 +1,4 @@
+DNS Lookup #0 for torproject.org using policy egypt_control
+DNS servers used: 172.25.112.1
+Default DNS lookup: 95.216.163.36,116.202.120.165,116.202.120.166
+Cloudflare DNS lookup: 95.216.163.36,116.202.120.165,116.202.120.166

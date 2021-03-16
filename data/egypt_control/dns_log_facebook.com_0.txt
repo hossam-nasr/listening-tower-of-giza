@@ -1,0 +1,4 @@
+DNS Lookup #0 for facebook.com using policy egypt_control
+DNS servers used: 172.25.112.1
+Default DNS lookup: 102.132.97.35
+Cloudflare DNS lookup: 179.60.192.36
