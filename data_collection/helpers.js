@@ -67,12 +67,15 @@ const startLogging = async (domain, test, number, policy, keylog_file) => {
 };
 exports.startLogging = startLogging;
 
-const domain_to_test_number = async (indices, domain) => {
-  if (!indices[domain]) {
-    indices[domain] = 0;
+const domain_to_test_number = async (indices, domain, policy) => {
+  if (!indices[policy]) {
+    indices[policy] = {}
   }
-  const number = indices[domain];
-  indices[domain] += 1;
+  if (!indices[policy][domain]) {
+    indices[policy][domain] = 0;
+  }
+  const number = indices[policy][domain];
+  indices[policy][domain] += 1;
   try {
     const filehandle = await open("./indices.json", "w");
     await filehandle.write(JSON.stringify(indices));

@@ -4,12 +4,12 @@ const { domain_to_test_number, createSslKeyLogFile } = require("./helpers.js");
 const { launchDnsTest } = require("./dns.js");
 const { launchPageLoadTest } = require("./pageload.js");
 
-const domain = "aljazeera.net";
-const policy = "test";
+const domain = "madamasr.com";
+const policy = "egypt_control";
 
 (async () => {
   try {
-    const testNumber = await domain_to_test_number(indices, domain);
+    const testNumber = await domain_to_test_number(indices, domain, policy);
     const keylog_file = await createSslKeyLogFile(domain, testNumber, policy);
     process.env["SSLKEYLOGFILE"] = keylog_file;
     sslkeylog.hookAll();
