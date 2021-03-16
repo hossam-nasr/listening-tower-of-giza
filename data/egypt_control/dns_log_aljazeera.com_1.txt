@@ -1,0 +1,4 @@
+DNS Lookup #1 for aljazeera.com using policy egypt_control
+DNS servers used: 172.25.112.1
+Default DNS lookup: 13.49.58.153,13.48.79.150,13.48.244.72
+Cloudflare DNS lookup: 18.190.69.10,3.19.85.103,18.221.4.222

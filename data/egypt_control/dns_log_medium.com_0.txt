@@ -1,0 +1,4 @@
+DNS Lookup #0 for medium.com using policy egypt_control
+DNS servers used: 172.25.112.1
+Default DNS lookup: 162.159.153.4,162.159.152.4
+Cloudflare DNS lookup: 162.159.152.4,162.159.153.4
