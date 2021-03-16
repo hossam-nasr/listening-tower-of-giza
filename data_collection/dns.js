@@ -44,22 +44,31 @@ const dnsTest = async (domain, number, policy) => {
       filehandle.write(`DNS servers used: ${dnsPromises.getServers()}\n`);
     }
     const resolver = new dnsPromises.Resolver();
-    addresses = await resolver.resolve4(domain);
-    addresses.map((address) => {
-      ret.add(address);
-    });
-    if (filehandle) {
-      filehandle.write(`Default DNS lookup: ${addresses}\n`);
+    try {
+      addresses = await resolver.resolve4(domain);
+      addresses.map((address) => {
+        ret.add(address);
+      });
+      if (filehandle) {
+        filehandle.write(`Default DNS lookup: ${addresses}\n`);
+      }
+    } catch(e) {
+      console.log("Error running DNS on default servers: ", e.message);
     }
-    resolver.setServers([cloudflareDNS]);
-    addresses = await resolver.resolve4(domain);
-    addresses.map((address) => {
-      ret.add(address);
-    });
-    if (filehandle) {
-      filehandle.write(`Cloudflare DNS lookup: ${addresses}\n`);
-      filehandle.close();
+    try {
+      resolver.setServers([cloudflareDNS]);
+      addresses = await resolver.resolve4(domain);
+      addresses.map((address) => {
+        ret.add(address);
+      });
+      if (filehandle) {
+        filehandle.write(`Cloudflare DNS lookup: ${addresses}\n`);
+        filehandle.close();
+      }
+    } catch(e) {
+      console.log("Error running DNS on Cloudflare servesrs: ", e.message);
     }
+    
   } catch (e) {
     console.log("Error running DNS tests: ", e.message);
   }
