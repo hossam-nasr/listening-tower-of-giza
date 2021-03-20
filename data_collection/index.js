@@ -16,7 +16,7 @@ const {
 const { launchDnsTest } = require("./dns.js");
 const { launchPageLoadTest } = require("./pageload.js");
 
-const policy = "us_control";
+const policy = "egypt_control";
 
 (async () => {
   try {
