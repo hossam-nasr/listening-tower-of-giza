@@ -16,17 +16,13 @@ const url_to_domain = (url) => {
 exports.url_to_domain = url_to_domain;
 
 const startLogging = async (domain, test, number, policy, keylog_file) => {
+  console.log(`Starting capture for ${domain}, test ${test} #${number}`);
   // Create .pcap file
-  console.log(
-    `Creating .pcap file for test ${test} #${number} for domain ${domain}...`
-  );
-
   pcapfilepath = `${DATA_DIRECTORY}/${policy}/${test}_pcap_${domain}_${number}.pcap`;
   try {
     const filehandle = await open(pcapfilepath, "w");
     await filehandle.chmod(444);
     await filehandle.close();
-    console.log("Successfully created .pcap file.");
   } catch (e) {
     console.log("Error creating .pcap file: ", e.message);
   }
@@ -44,18 +40,18 @@ const startLogging = async (domain, test, number, policy, keylog_file) => {
       "udp port 53 or tcp port 80 or tcp port 443",
     ];
   }
-  console.log("Creating tshark logging process...");
+
   const tsharkProc = spawn("sudo", options);
   const tsharkProcStartPromise = new Promise((resolve) => {
     tsharkProc.stdout.on("data", (data) => {
       if (`${data}`.startsWith("Capturing")) {
-        setTimeout(resolve, 500);
+        setTimeout(resolve, 500 + Math.round(Math.random() * 1000));
       }
     });
 
     tsharkProc.stderr.on("data", (data) => {
       if (`${data}`.startsWith("Capturing")) {
-        setTimeout(resolve, 500);
+        setTimeout(resolve, 500 + Math.round(Math.random() * 1000));
       }
     });
   });
@@ -208,6 +204,5 @@ const saveExperimentData = async (
   csv_string_without_title = csv_string.split("\n")[1];
   await datafilehandle.write(csv_string_without_title);
   await datafilehandle.write("\n");
-  datafilehandle.close();
 };
 exports.saveExperimentData = saveExperimentData;

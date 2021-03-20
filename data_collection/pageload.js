@@ -26,7 +26,10 @@ const launchPageLoadTest = async (domain, number, policy, keylog_file) => {
     });
     await browser.close();
     console.log("Success!");
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    // wait a random number of seconds (between 2 and 12s) after each trial
+    await new Promise((resolve) =>
+      setTimeout(resolve, 2000 + Math.round(Math.random() * 10000))
+    );
   } catch (e) {
     console.log("Puppeteer error: ", e.message);
     success = 0;

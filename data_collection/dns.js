@@ -5,7 +5,6 @@ const { startLogging } = require("./helpers.js");
 const { DATA_DIRECTORY } = require("./constants.js");
 
 const launchDnsTest = async (domain, number, policy, keylog_file) => {
-  console.log("Starting capture...");
   const pid = await startLogging(domain, "dns", number, policy, keylog_file);
 
   // DNS Tests
