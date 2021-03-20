@@ -1,6 +1,13 @@
 const { spawn } = require("child_process");
+const { existsSync, mkdirSync } = require("fs");
 const { open } = require("fs").promises;
-const { DATA_DIRECTORY } = require("./constants.js");
+const {
+  DATA_DIRECTORY,
+  SCREENSHOTS_DIR_NAME,
+  DATA_CSV_FILE_NAME,
+  fields,
+} = require("./constants.js");
+const { parse } = require("json2csv");
 
 const url_to_domain = (url) => {
   const regex = /^(?:https?:)?(?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im;
@@ -9,17 +16,13 @@ const url_to_domain = (url) => {
 exports.url_to_domain = url_to_domain;
 
 const startLogging = async (domain, test, number, policy, keylog_file) => {
+  console.log(`Starting capture for ${domain}, test ${test} #${number}`);
   // Create .pcap file
-  console.log(
-    `Creating .pcap file for test ${test} #${number} for domain ${domain}...`
-  );
-
   pcapfilepath = `${DATA_DIRECTORY}/${policy}/${test}_pcap_${domain}_${number}.pcap`;
   try {
     const filehandle = await open(pcapfilepath, "w");
     await filehandle.chmod(444);
     await filehandle.close();
-    console.log("Successfully created .pcap file.");
   } catch (e) {
     console.log("Error creating .pcap file: ", e.message);
   }
@@ -37,18 +40,18 @@ const startLogging = async (domain, test, number, policy, keylog_file) => {
       "udp port 53 or tcp port 80 or tcp port 443",
     ];
   }
-  console.log("Creating tshark logging process...");
+
   const tsharkProc = spawn("sudo", options);
   const tsharkProcStartPromise = new Promise((resolve) => {
     tsharkProc.stdout.on("data", (data) => {
       if (`${data}`.startsWith("Capturing")) {
-        setTimeout(resolve, 100);
+        setTimeout(resolve, 500 + Math.round(Math.random() * 1000));
       }
     });
 
     tsharkProc.stderr.on("data", (data) => {
       if (`${data}`.startsWith("Capturing")) {
-        setTimeout(resolve, 100);
+        setTimeout(resolve, 500 + Math.round(Math.random() * 1000));
       }
     });
   });
@@ -67,15 +70,46 @@ const startLogging = async (domain, test, number, policy, keylog_file) => {
 };
 exports.startLogging = startLogging;
 
-const domain_to_test_number = async (indices, domain, policy) => {
+const domain_to_test_number = (indices, domain, policy) => {
   if (!indices[policy]) {
-    indices[policy] = {}
+    indices[policy] = {};
   }
   if (!indices[policy][domain]) {
     indices[policy][domain] = 0;
   }
   const number = indices[policy][domain];
   indices[policy][domain] += 1;
+  return number;
+};
+exports.domain_to_test_number = domain_to_test_number;
+
+const get_run_number = (indices, policy) => {
+  if (!indices[policy]) {
+    indices[policy] = {};
+  }
+  if (!indices[policy]["run_number"]) {
+    indices[policy]["run_number"] = 0;
+  }
+  const run_number = indices[policy]["run_number"];
+  indices[policy]["run_number"] += 1;
+  return run_number;
+};
+exports.get_run_number = get_run_number;
+
+const get_experiment_id = (indices, policy) => {
+  if (!indices[policy]) {
+    indices[policy] = {};
+  }
+  if (!indices[policy]["next_experiment_id"]) {
+    indices[policy]["next_experiment_id"] = 0;
+  }
+  const exp_id = indices[policy]["next_experiment_id"];
+  indices[policy]["next_experiment_id"] += 1;
+  return exp_id;
+};
+exports.get_experiment_id = get_experiment_id;
+
+const save_indices = async (indices) => {
   try {
     const filehandle = await open("./indices.json", "w");
     await filehandle.write(JSON.stringify(indices));
@@ -83,9 +117,8 @@ const domain_to_test_number = async (indices, domain, policy) => {
   } catch (e) {
     console.log("Error updating .json indices: ", e.message);
   }
-  return number;
 };
-exports.domain_to_test_number = domain_to_test_number;
+exports.save_indices = save_indices;
 
 const createSslKeyLogFile = async (domain, number, policy) => {
   try {
@@ -101,3 +134,75 @@ const createSslKeyLogFile = async (domain, number, policy) => {
   }
 };
 exports.createSslKeyLogFile = createSslKeyLogFile;
+
+const createDirsIfNotExist = (policy) => {
+  const dir_path = `${DATA_DIRECTORY}/${policy}`;
+  const screenshots_path = `${dir_path}/${SCREENSHOTS_DIR_NAME}`;
+  if (!existsSync(dir_path)) {
+    mkdirSync(dir_path);
+  }
+  if (!existsSync(screenshots_path)) {
+    mkdirSync(screenshots_path);
+  }
+};
+exports.createDirsIfNotExist = createDirsIfNotExist;
+
+const getDataCsvFile = async (policy) => {
+  const data_csv_path = `${DATA_DIRECTORY}/${policy}/${DATA_CSV_FILE_NAME}`;
+  let datafilehandle;
+  try {
+    if (!existsSync(data_csv_path)) {
+      datafilehandle = await open(data_csv_path, "w");
+      await datafilehandle.chmod(444);
+      await datafilehandle.write(fields.join(","));
+      await datafilehandle.write("\n");
+    } else {
+      datafilehandle = await open(data_csv_path, "a");
+    }
+  } catch (e) {
+    console.log("Error opening data file: ", e.message);
+  }
+  return datafilehandle;
+};
+exports.getDataCsvFile = getDataCsvFile;
+
+const getInitialExperimentData = (
+  experiment_id,
+  run_number,
+  domain,
+  testNumber,
+  policy
+) => {
+  const now = new Date();
+  return {
+    experiment_id,
+    run_number,
+    policy,
+    domain,
+    experiment_count: testNumber,
+    experiment_code: `${domain}_${testNumber}`,
+    timestamp: now.getTime(),
+    timezone_offset: now.getTimezoneOffset(),
+    local_time: now.toLocaleString(),
+  };
+};
+exports.getInitialExperimentData = getInitialExperimentData;
+
+const saveExperimentData = async (
+  datafilehandle,
+  prev_experiment_data,
+  dns_data,
+  page_load_data
+) => {
+  const experiment_data = Object.assign(
+    prev_experiment_data,
+    page_load_data,
+    dns_data
+  );
+
+  const csv_string = parse(experiment_data, { fields });
+  csv_string_without_title = csv_string.split("\n")[1];
+  await datafilehandle.write(csv_string_without_title);
+  await datafilehandle.write("\n");
+};
+exports.saveExperimentData = saveExperimentData;
