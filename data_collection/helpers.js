@@ -170,6 +170,7 @@ const getInitialExperimentData = (
   experiment_id,
   run_number,
   domain,
+  url,
   testNumber,
   policy
 ) => {
@@ -179,6 +180,7 @@ const getInitialExperimentData = (
     run_number,
     policy,
     domain,
+    url,
     experiment_count: testNumber,
     experiment_code: `${domain}_${testNumber}`,
     timestamp: now.getTime(),
@@ -206,3 +208,10 @@ const saveExperimentData = async (
   await datafilehandle.write("\n");
 };
 exports.saveExperimentData = saveExperimentData;
+
+const get_url_list = async () => {
+  const filehandle = await open("urls_to_test.txt", "r");
+  const text = await filehandle.readFile();
+  return `${text}`.split("\n");
+};
+exports.get_url_list = get_url_list;
