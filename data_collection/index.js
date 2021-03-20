@@ -4,8 +4,8 @@ const { domain_to_test_number, createSslKeyLogFile } = require("./helpers.js");
 const { launchDnsTest } = require("./dns.js");
 const { launchPageLoadTest } = require("./pageload.js");
 
-const domain = "facebook.com";
-const policy = "egypt_control";
+const domain = "madamasr.com";
+const policy = "us_control";
 
 (async () => {
   try {

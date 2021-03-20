@@ -1,0 +1,4 @@
+DNS Lookup #1 for madamasr.com using policy us_control
+DNS servers used: 172.27.64.1
+Default DNS lookup: 104.22.17.135,104.22.16.135,172.67.5.33
+Cloudflare DNS lookup: 172.67.5.33,104.22.17.135,104.22.16.135
