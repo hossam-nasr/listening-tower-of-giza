@@ -6,6 +6,7 @@ exports.fields = [
   "run_number",
   "policy",
   "domain",
+  "url",
   "experiment_count",
   "experiment_code",
   "timestamp",

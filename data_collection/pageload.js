@@ -1,11 +1,12 @@
 const puppeteer = require("puppeteer");
 const kill = require("tree-kill");
-const { startLogging } = require("./helpers.js");
+const { startLogging, url_to_domain } = require("./helpers.js");
 const { DATA_DIRECTORY } = require("./constants.js");
 
-const launchPageLoadTest = async (domain, number, policy, keylog_file) => {
+const launchPageLoadTest = async (url, number, policy, keylog_file) => {
   let success = 1;
   let status = "success";
+  const domain = url_to_domain(url);
   const pid = await startLogging(
     domain,
     "pageload",
@@ -14,7 +15,6 @@ const launchPageLoadTest = async (domain, number, policy, keylog_file) => {
     keylog_file
   );
   try {
-    const url = `http://${domain}`;
     console.log("Launching browser...");
     const browser = await puppeteer.launch({ args: ["--no-sandbox"] });
     const page = await browser.newPage();

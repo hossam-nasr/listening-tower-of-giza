@@ -170,6 +170,7 @@ const getInitialExperimentData = (
   experiment_id,
   run_number,
   domain,
+  url,
   testNumber,
   policy
 ) => {
@@ -179,6 +180,7 @@ const getInitialExperimentData = (
     run_number,
     policy,
     domain,
+    url,
     experiment_count: testNumber,
     experiment_code: `${domain}_${testNumber}`,
     timestamp: now.getTime(),
