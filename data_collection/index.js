@@ -11,19 +11,17 @@ const {
   get_run_number,
   get_experiment_id,
   url_to_domain,
+  get_url_list,
 } = require("./helpers.js");
 const { launchDnsTest } = require("./dns.js");
 const { launchPageLoadTest } = require("./pageload.js");
 
-const urls = [
-  "https://www.amnesty.org/en/countries/middle-east-and-north-africa/egypt/report-egypt/",
-  "https://www.amnesty.org/en/latest/news/2017/10/egypt-escalates-lgbti-crackdown-with-fresh-wave-of-arrests-and-anal-examinations/",
-];
 const policy = "us_control";
 
 (async () => {
   try {
     // setup
+    const urls = await get_url_list();
     createDirsIfNotExist();
     const datafilehandle = await getDataCsvFile(policy);
     const run_number = get_run_number(indices, policy);
