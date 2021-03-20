@@ -49,13 +49,13 @@ const startLogging = async (domain, test, number, policy, keylog_file) => {
   const tsharkProcStartPromise = new Promise((resolve) => {
     tsharkProc.stdout.on("data", (data) => {
       if (`${data}`.startsWith("Capturing")) {
-        setTimeout(resolve, 100);
+        setTimeout(resolve, 500);
       }
     });
 
     tsharkProc.stderr.on("data", (data) => {
       if (`${data}`.startsWith("Capturing")) {
-        setTimeout(resolve, 100);
+        setTimeout(resolve, 500);
       }
     });
   });
