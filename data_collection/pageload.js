@@ -22,9 +22,11 @@ const launchPageLoadTest = async (url, number, policy, keylog_file) => {
     console.log("Navigating to page...");
     await page.goto(url);
     console.log("Capturing screenshot...");
-    await page.screenshot({
-      path: `${DATA_DIRECTORY}/${policy}/screenshots/screenshot_${domain}_${number}.png`,
-    });
+    if (url != "https://www.defenceweb.co.za/") {
+      await page.screenshot({
+        path: `${DATA_DIRECTORY}/${policy}/screenshots/screenshot_${domain}_${number}.png`,
+      });
+    }
     console.log("Success!");
   } catch (e) {
     console.log("Puppeteer error: ", e.message);
