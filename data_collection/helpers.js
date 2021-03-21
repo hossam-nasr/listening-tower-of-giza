@@ -19,12 +19,22 @@ const startLogging = async (domain, test, number, policy, keylog_file) => {
   console.log(`Starting capture for ${domain}, test ${test} #${number}`);
   // Create .pcap file
   pcapfilepath = `${DATA_DIRECTORY}/${policy}/${test}_pcap_${domain}_${number}.pcap`;
+  logfilepath = `${DATA_DIRECTORY}/${policy}/${test}_tshark_log_${domain}_${number}.log`;
   try {
     const filehandle = await open(pcapfilepath, "w");
     await filehandle.chmod(444);
     await filehandle.close();
   } catch (e) {
     console.log("Error creating .pcap file: ", e.message);
+  }
+
+  // create log file
+  let logfilehandle;
+  try {
+    logfilehandle = await open(logfilepath, "w");
+    await logfilehandle.chmod(444);
+  } catch (e) {
+    console.log("Error creating tshark log file: ", e.message);
   }
 
   // Spawn tshark process
@@ -62,6 +72,21 @@ const startLogging = async (domain, test, number, policy, keylog_file) => {
 
   tsharkProc.on("close", (code) => {
     console.log(`tshark child process exited with code ${code}`);
+    if (logfilehandle) {
+      logfilehandle.close();
+    }
+  });
+
+  tsharkProc.stdin.on("data", (data) => {
+    if (logfilehandle) {
+      logfilehandle.write(`${data}\n`);
+    }
+  });
+
+  tsharkProc.stderr.on("data", (data) => {
+    if (logfilehandle) {
+      logfilehandle.write(`${data}\n`);
+    }
   });
 
   await tsharkProcStartPromise;
@@ -120,7 +145,7 @@ exports.save_indices = save_indices;
 
 const get_indices_file = async () => {
   return await open("./indices.json", "w");
-}
+};
 exports.get_indices_file = get_indices_file;
 
 const createSslKeyLogFile = async (domain, number, policy) => {
