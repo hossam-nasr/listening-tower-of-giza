@@ -109,16 +109,19 @@ const get_experiment_id = (indices, policy) => {
 };
 exports.get_experiment_id = get_experiment_id;
 
-const save_indices = async (indices) => {
+const save_indices = async (indices, filehandle) => {
   try {
-    const filehandle = await open("./indices.json", "w");
-    await filehandle.write(JSON.stringify(indices));
-    await filehandle.close();
+    await filehandle.writeFile(JSON.stringify(indices));
   } catch (e) {
     console.log("Error updating .json indices: ", e.message);
   }
 };
 exports.save_indices = save_indices;
+
+const get_indices_file = async () => {
+  return await open("./indices.json", "w");
+}
+exports.get_indices_file = get_indices_file;
 
 const createSslKeyLogFile = async (domain, number, policy) => {
   try {

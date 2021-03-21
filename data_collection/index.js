@@ -12,6 +12,7 @@ const {
   get_experiment_id,
   url_to_domain,
   get_url_list,
+  get_indices_file,
 } = require("./helpers.js");
 const { launchDnsTest } = require("./dns.js");
 const { launchPageLoadTest } = require("./pageload.js");
@@ -21,9 +22,10 @@ const policy = "egypt_control";
 (async () => {
   try {
     // setup
-    const urls = await get_url_list();
+    const urls = (await get_url_list()).reverse();
     createDirsIfNotExist();
     const datafilehandle = await getDataCsvFile(policy);
+    const indicesfilehandle = await get_indices_file();
     const run_number = get_run_number(indices, policy);
 
     for (let i = 0; i < urls.length; i++) {
@@ -67,11 +69,12 @@ const policy = "egypt_control";
         dns_results,
         page_load_res
       );
+      await save_indices(indices, indicesfilehandle);
     }
 
     // save indices
     datafilehandle.close();
-    save_indices(indices);
+    indicesfilehandle.close();
   } catch (e) {
     console.log("Error: ", e.message);
   }
