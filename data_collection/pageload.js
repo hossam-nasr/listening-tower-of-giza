@@ -1,5 +1,6 @@
 const puppeteer = require("puppeteer");
 const kill = require("tree-kill");
+const util = require("util");
 const { startLogging, url_to_domain } = require("./helpers.js");
 const { DATA_DIRECTORY } = require("./constants.js");
 
@@ -22,9 +23,11 @@ const launchPageLoadTest = async (url, number, policy, keylog_file) => {
     console.log("Navigating to page...");
     await page.goto(url);
     console.log("Capturing screenshot...");
-    await page.screenshot({
-      path: `${DATA_DIRECTORY}/${policy}/screenshots/screenshot_${domain}_${number}.png`,
-    });
+    if (url != "https://www.defenceweb.co.za/") {
+      await page.screenshot({
+        path: `${DATA_DIRECTORY}/${policy}/screenshots/screenshot_${domain}_${number}.png`,
+      });
+    }
     console.log("Success!");
   } catch (e) {
     console.log("Puppeteer error: ", e.message);
@@ -39,7 +42,7 @@ const launchPageLoadTest = async (url, number, policy, keylog_file) => {
   const seconds = 2 + Math.round(Math.random() * 10);
   console.log(`Waiting ${seconds}s...`);
   await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
-  kill(pid);
+  await util.promisify(kill)(pid);
   return { success, status };
 };
 exports.launchPageLoadTest = launchPageLoadTest;

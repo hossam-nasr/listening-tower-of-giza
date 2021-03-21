@@ -1,5 +1,6 @@
 const dnsPromises = require("dns").promises;
 const kill = require("tree-kill");
+const util = require("util");
 const { open } = require("fs").promises;
 const { startLogging } = require("./helpers.js");
 const { DATA_DIRECTORY } = require("./constants.js");
@@ -11,7 +12,7 @@ const launchDnsTest = async (domain, number, policy, keylog_file) => {
   console.log("Starting DNS Tests...");
   const dns_results = await dnsTest(domain);
   await new Promise((resolve) => setTimeout(resolve, 2000));
-  kill(pid);
+  await util.promisify(kill)(pid);
   console.log("Successfully ran DNS tests.");
   return dns_results;
 };
