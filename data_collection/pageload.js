@@ -14,9 +14,10 @@ const launchPageLoadTest = async (url, number, policy, keylog_file) => {
     policy,
     keylog_file
   );
+  let browser;
   try {
     console.log("Launching browser...");
-    const browser = await puppeteer.launch({ args: ["--no-sandbox"] });
+    browser = await puppeteer.launch({ args: ["--no-sandbox"] });
     const page = await browser.newPage();
     console.log("Navigating to page...");
     await page.goto(url);
@@ -24,17 +25,20 @@ const launchPageLoadTest = async (url, number, policy, keylog_file) => {
     await page.screenshot({
       path: `${DATA_DIRECTORY}/${policy}/screenshots/screenshot_${domain}_${number}.png`,
     });
-    await browser.close();
     console.log("Success!");
-    // wait a random number of seconds (between 2 and 12s) after each trial
-    await new Promise((resolve) =>
-      setTimeout(resolve, 2000 + Math.round(Math.random() * 10000))
-    );
   } catch (e) {
     console.log("Puppeteer error: ", e.message);
     success = 0;
     status = e.message;
   }
+
+  if (browser) {
+    await browser.close();
+  }
+  // wait a random number of seconds (between 2 and 12s) after each trial
+  const seconds = 2 + Math.round(Math.random() * 10);
+  console.log(`Waiting ${seconds}s...`);
+  await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
   kill(pid);
   return { success, status };
 };
