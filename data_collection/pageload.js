@@ -1,5 +1,6 @@
 const puppeteer = require("puppeteer");
 const kill = require("tree-kill");
+const util = require("util");
 const { startLogging, url_to_domain } = require("./helpers.js");
 const { DATA_DIRECTORY } = require("./constants.js");
 
@@ -41,7 +42,7 @@ const launchPageLoadTest = async (url, number, policy, keylog_file) => {
   const seconds = 2 + Math.round(Math.random() * 10);
   console.log(`Waiting ${seconds}s...`);
   await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
-  kill(pid);
+  await util.promisify(kill)(pid);
   return { success, status };
 };
 exports.launchPageLoadTest = launchPageLoadTest;
