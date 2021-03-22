@@ -3,4 +3,5 @@ dns_tshark_log_*
 keylogfile_*
 pageload_pcap_*
 pageload_tshark_log_*
+dns_log_*
 screenshots
