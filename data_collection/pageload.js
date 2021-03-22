@@ -38,10 +38,10 @@ const launchPageLoadTest = async (url, number, policy, keylog_file) => {
   if (browser) {
     await browser.close();
   }
-  // wait a random number of seconds (between 2 and 12s) after each trial
-  const seconds = 2 + Math.round(Math.random() * 10);
-  console.log(`Waiting ${seconds}s...`);
-  await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+  // wait a random amount of time (between 2 and 4s) after each trial
+  const ms = Math.round(2000 + Math.random() * 2000);
+  console.log(`Waiting ${ms}ms...`);
+  await new Promise((resolve) => setTimeout(resolve, ms));
   await util.promisify(kill)(pid);
   return { success, status };
 };

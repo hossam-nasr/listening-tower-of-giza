@@ -17,13 +17,13 @@ const {
 const { launchDnsTest } = require("./dns.js");
 const { launchPageLoadTest } = require("./pageload.js");
 
-const policy = "egypt_control";
+const policy = "us_control";
 
 (async () => {
   try {
     // setup
     const urls = (await get_url_list()).reverse();
-    createDirsIfNotExist();
+    createDirsIfNotExist(policy);
     const datafilehandle = await getDataCsvFile(policy);
     const indicesfilehandle = await get_indices_file();
     const run_number = get_run_number(indices, policy);
