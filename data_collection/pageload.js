@@ -21,7 +21,7 @@ const launchPageLoadTest = async (url, number, policy, keylog_file) => {
     browser = await puppeteer.launch({ args: ["--no-sandbox"] });
     const page = await browser.newPage();
     console.log("Navigating to page...");
-    await page.goto(url);
+    await page.goto(url, { waitUntil: "networkidle0", timeout: 60000 });
     console.log("Capturing screenshot...");
     if (url != "https://www.defenceweb.co.za/") {
       await page.screenshot({

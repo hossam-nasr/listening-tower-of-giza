@@ -13,8 +13,13 @@
   "license": "ISC",
   "dependencies": {
     "json2csv": "^5.0.6",
+    "node-fetch": "^2.6.1",
     "node-gyp": "^7.1.2",
     "puppeteer": "^8.0.0",
+    "readline": "^1.3.0",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6",
+    "stream": "0.0.2",
     "tree-kill": "^1.2.2"
   },
   "devDependencies": {

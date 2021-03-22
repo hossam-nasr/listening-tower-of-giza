@@ -1,2 +1,0 @@
-DNS Lookup #1 for aljazeera.net using policy egypt_control
-DNS servers used: 172.25.112.1
