@@ -22,7 +22,7 @@ const policy = "us_control";
 (async () => {
   try {
     // setup
-    const urls = (await get_url_list()).reverse();
+    const urls = await get_url_list();
     createDirsIfNotExist(policy);
     const datafilehandle = await getDataCsvFile(policy);
     const indicesfilehandle = await get_indices_file();
