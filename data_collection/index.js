@@ -17,7 +17,7 @@ const {
 const { launchDnsTest } = require("./dns.js");
 const { launchPageLoadTest } = require("./pageload.js");
 
-const policy = "us_nordvpn";
+const policy = "us_control";
 
 (async () => {
   try {
