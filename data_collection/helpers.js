@@ -239,7 +239,7 @@ const saveExperimentData = async (
 exports.saveExperimentData = saveExperimentData;
 
 const get_url_list = async () => {
-  const filehandle = await open("urls_to_test.txt", "r");
+  const filehandle = await open("sample_urls.txt", "r");
   const text = await filehandle.readFile();
   filehandle.close();
   return `${text}`.split("\n");
