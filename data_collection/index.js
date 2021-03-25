@@ -17,13 +17,12 @@ const {
 const { launchDnsTest } = require("./dns.js");
 const { launchPageLoadTest } = require("./pageload.js");
 
-const policy = "egypt_test";
+const policy = "egypt_control";
 
 (async () => {
   try {
     // setup
-    // const urls = (await get_url_list()).reverse();
-    const urls = ["http://madamasr.com", "http://aljazeera.net", "http://torproject.org", "http://medium.com", "http://facebook.com", "http://youtube.com", "http://google.com"];
+    const urls = await get_url_list();
     createDirsIfNotExist(policy);
     const datafilehandle = await getDataCsvFile(policy);
     const indicesfilehandle = await get_indices_file();
