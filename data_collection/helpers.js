@@ -137,7 +137,7 @@ exports.get_experiment_id = get_experiment_id;
 const save_indices = async (indices, filehandle) => {
   try {
     await filehandle.truncate();
-    await filehandle.write(JSON.stringify(indices), 0);
+    await filehandle.write(JSON.stringify(indices, null, 2), 0);
   } catch (e) {
     console.log("Error updating .json indices: ", e.message);
   }
