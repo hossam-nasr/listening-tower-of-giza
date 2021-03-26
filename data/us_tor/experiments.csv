@@ -1,0 +1,2 @@
+experiment_id,run_number,policy,domain,url,experiment_count,experiment_code,timestamp,timezone_offset,local_time,default_dns_servers,default_lookup_status,default_lookup_success,default_lookup_ips,cloudflare_lookup_status,cloudflare_lookup_success,cloudflare_lookup_ips,all_ips,page_load_success,page_load_status
+0,0,"us_tor","check.torproject.org","https://check.torproject.org",0,"check.torproject.org_0",1616746272181,240,"3/26/2021, 4:11:12 AM","[""172.24.64.1""]","success",1,"[""116.202.120.181""]","success",1,"[""116.202.120.181""]","[""116.202.120.181""]",1,"success"
