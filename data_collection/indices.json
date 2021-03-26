@@ -8103,5 +8103,10 @@
     "freshfreeproxy.ga": 1,
     "umayyapress.com": 1,
     "drudgereport.com": 1
+  },
+  "egypt_torbrowser_test": {
+    "run_number": 1,
+    "next_experiment_id": 1,
+    "check.torproject.org": 1
   }
 }
