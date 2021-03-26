@@ -18,7 +18,13 @@ const launchPageLoadTest = async (url, number, policy, keylog_file) => {
   let browser;
   try {
     console.log("Launching browser...");
-    browser = await puppeteer.launch({ args: ["--no-sandbox"] });
+    const args = ["--no-sandbox"];
+    if (policy.includes("torbrowser")) {
+      args.push("--proxy-server=socks://localhost:9150");
+    } else if (policy.includes("tor")) {
+      args.push("--proxy-server=socks://localhost:9050");
+    }
+    browser = await puppeteer.launch({ args });
     const page = await browser.newPage();
     console.log("Navigating to page...");
     await page.goto(url, { waitUntil: "networkidle0", timeout: 60000 });
