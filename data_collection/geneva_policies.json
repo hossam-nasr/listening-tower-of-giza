@@ -1,0 +1,4 @@
+{
+  "def": "[TCP:flags:PA]-duplicate(tamper{TCP:dataofs:replace:10}(tamper{TCP:chksum:corrupt},),)-|",
+  "evolved": "[TCP:options-sack:]-tamper{TCP:window:corrupt}(drop,)-|"
+}
