@@ -1,8 +1,0 @@
-sudo python3 engine.py --server-port 443 --strategy "[TCP:flags:PA]-duplicate(tamper{TCP:dataofs:replace:10}(tamper{TCP:chksum:corrupt},),)-|" --log info --no-save-packets --in-queue-num 3 --out-queue-num 4
-sudo python3 engine.py --server-port 80 --strategy "[TCP:flags:PA]-duplicate(tamper{TCP:dataofs:replace:10}(tamper{TCP:chksum:corrupt},),)-|" --log info --no-save-packets
-sudo iptables -F
-ulimit -Sn 100000
-ulimit -a
-sudo python3 evolve.py --test-type http --use-external-sites --log info --generations 3
-sudo python3 engine.py --server-port 443 --strategy "[TCP:options-sack:]-tamper{TCP:window:corrupt}(drop,)-|" --log info --no-save-packets --in-queue-num 3 --out-queue-num 4
-sudo python3 engine.py --server-port 80 --strategy "[TCP:options-sack:]-tamper{TCP:window:corrupt}(drop,)-|" --log info --no-save-packets
