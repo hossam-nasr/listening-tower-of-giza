@@ -17,7 +17,7 @@ const {
 const { launchDnsTest } = require("./dns.js");
 const { launchPageLoadTest } = require("./pageload.js");
 
-const policy = "egypt_nordvpn_std_nat";
+const policy = "us_torbrowser";
 
 (async () => {
   try {
