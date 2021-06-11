@@ -17,7 +17,7 @@ const {
 const { launchDnsTest } = require("./dns.js");
 const { launchPageLoadTest } = require("./pageload.js");
 
-const policy = "us_torbrowser";
+const policy = "us_tor_new_test";
 
 (async () => {
   try {

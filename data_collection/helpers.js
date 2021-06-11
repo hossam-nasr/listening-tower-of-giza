@@ -44,10 +44,11 @@ const startLogging = async (domain, test, number, policy, keylog_file) => {
   } else {
     options = [
       ...options,
-      "-o",
-      `tls.keylog_file: ${keylog_file}`,
+      // "-o",
+      // `tls.keylog_file: ${keylog_file}`,
       "-f",
-      "udp port 53 or tcp port 80 or tcp port 443",
+      "tcp or udp",
+      // "udp port 53 or tcp port 80 or tcp port 443",
     ];
   }
 

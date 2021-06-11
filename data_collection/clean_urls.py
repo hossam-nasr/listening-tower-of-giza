@@ -36,7 +36,13 @@ broken_urls_set = set(
 all_urls = list(set(bad_traffic_urls + ooni_urls + global_sites_urls + egypt_sites_urls) - broken_urls_set)
 
 
-with open("urls_to_test.txt", "w") as f:
-    f.write("\n".join(all_urls))
+# with open("all_sites_tested.txt", "w") as f:
+#     f.write("\n".join(all_urls))
 
-print(f"Successfully written {len(all_urls)} urls")
+sites_tested = pd.read_csv("urls_to_test.txt", header=None)
+total_sites = pd.read_csv("all_sites_tested.txt", header=None)
+urls_excluded = set(set(total_sites[0]) - set(sites_tested[0]))
+with open("broken_urls.txt", "w") as f:
+    f.write("\n".join(list(urls_excluded)))
+
+print(f"Successfully written {len(urls_excluded)} urls")
