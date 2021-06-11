@@ -10488,5 +10488,11 @@
     "freshfreeproxy.ga": 1,
     "umayyapress.com": 1,
     "drudgereport.com": 1
+  },
+  "us_tor_new_test": {
+    "run_number": 2,
+    "next_experiment_id": 3,
+    "shahidlive.co": 2,
+    "katib.net": 1
   }
 }
