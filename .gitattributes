@@ -1,0 +1,8 @@
+dns_pcap_* filter=lfs diff=lfs merge=lfs -text
+dns_tshark_log_* filter=lfs diff=lfs merge=lfs -text
+keylogfile_* filter=lfs diff=lfs merge=lfs -text
+pageload_pcap_* filter=lfs diff=lfs merge=lfs -text
+pageload_tshark_log_* filter=lfs diff=lfs merge=lfs -text
+dns_log_* filter=lfs diff=lfs merge=lfs -text
+*.png filter=lfs diff=lfs merge=lfs -text
+csv_* filter=lfs diff=lfs merge=lfs -text
